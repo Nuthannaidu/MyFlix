@@ -3,19 +3,25 @@ const bcrypt = require('bcrypt');
 
 exports.register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+ 
+    const { username, email, password } = req.body;
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
 
-    const user = await User.create({ email, password });
+    const user = await User.create({ 
+      username, 
+      email, 
+      password 
+    });
 
     req.session.userId = user.id;
 
     res.status(201).json({
       id: user.id,
+      username: user.username, 
       email: user.email,
       message: 'Registration successful',
     });
@@ -71,8 +77,6 @@ exports.logout = (req, res) => {
 
 exports.me = async (req, res) => {
   try {
-    console.log("Session in /me:", req.session);
-
     if (!req.session || !req.session.userId) {
       return res.status(401).json({ user: null });
     }
@@ -83,10 +87,12 @@ exports.me = async (req, res) => {
       return res.status(401).json({ user: null });
     }
 
+    // 3. Include username in the response
     res.json({
       user: {
         id: user.id,
         email: user.email,
+        username: user.username // ✅ Now Navbar will display this!
       },
     });
 
