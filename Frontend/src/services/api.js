@@ -4,23 +4,26 @@ const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
 const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: true, // 🚀 Required to send/receive cookies
 });
 
-// 🔥 GLOBAL ERROR HANDLER
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("API Error:", error);
+    // 1. If it's a 401, don't redirect to /error. 
+    // Let the component or Redux handle the redirect to /login.
+    if (error.response?.status === 401) {
+      console.warn("Unauthorized request - session likely expired.");
+      return Promise.reject(error);
+    }
 
-    window.location.href = "/error";
+    // 2. Only redirect to /error for server crashes (500s)
+    if (!error.response || error.response.status >= 500) {
+      window.location.href = "/error";
+    }
 
     return Promise.reject(error);
   }
 );
-
-export const getVideos = () => api.get('/videos');
-export const register = (data) => api.post('/auth/register', data);
-export const login = (data) => api.post('/auth/login', data);
 
 export default api;
