@@ -13,21 +13,23 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Assuming 'message' comes from backend for success (e.g., "Welcome back!"). 
-  // If not, we fallback to a default success message when 'user' exists.
   const { user, loading, error, message } = useSelector((state) => state.auth);
 
-  // Clear previous states on mount
+  // ------------------------------------------------------------------
+  // 🔥 DYNAMIC URL CONFIGURATION
+  // This automatically switches between Localhost and Render
+  // ------------------------------------------------------------------
+  const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
   useEffect(() => {
     dispatch(clearAuth());
   }, [dispatch]);
 
-  // Handle Redirection with a small delay so user sees the success message
   useEffect(() => {
     if (user) {
       const timer = setTimeout(() => {
         navigate('/');
-      }, 1500); // 1.5 second delay for UX
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [user, navigate]);
@@ -51,11 +53,22 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => { window.location.href = 'http://localhost:5000/api/auth/google'; };
-  const handleGithubLogin = () => { window.location.href = 'http://localhost:5000/api/auth/github'; };
+  // ------------------------------------------------------------------
+  // 🔥 UPDATED OAUTH HANDLERS
+  // Uses the dynamic API_URL instead of hardcoded localhost
+  // ------------------------------------------------------------------
+  const handleGoogleLogin = () => { 
+    window.location.href = `${API_URL}/auth/google`; 
+  };
+  
+  const handleGithubLogin = () => { 
+    window.location.href = `${API_URL}/auth/github`; 
+  };
 
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 overflow-hidden">
+      {/* ... (The rest of your JSX remains exactly the same) ... */}
+      
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-purple-600/20 to-transparent rounded-full blur-3xl animate-pulse"></div>
@@ -117,7 +130,6 @@ const Login = () => {
             )}
 
             {/* --- SUCCESS MESSAGE --- */}
-            {/* We show this if there is a specific backend message OR if the user object exists (login success) */}
             {(message || user) && !error && (
               <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-sm animate-fadeIn flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
@@ -189,7 +201,7 @@ const Login = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading || (user && !error)} // Disable if loading OR if already logged in (success state)
+                disabled={loading || (user && !error)}
                 className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-500/30 disabled:hover:scale-100"
               >
                 {loading ? (
@@ -211,7 +223,7 @@ const Login = () => {
               </button>
             </form>
 
-            {/* Divider and OAuth section remains unchanged */}
+            {/* Divider */}
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-white/10"></div>

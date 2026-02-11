@@ -1,69 +1,74 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Ensure cookies (sessions) are sent with every request
-axios.defaults.withCredentials = true;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
-const API_URL = 'http://localhost:5000/api/auth';
+// Create a dedicated Axios instance
+const api = axios.create({
+  baseURL: BASE_URL,
+  withCredentials: true, // Important: Sends cookies/sessions with every request
+});
 
-// 1. CHECK AUTH (Replaces fetchMe)
-// This is called when the app loads to see if the user is already logged in (via Cookie)
 export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`${API_URL}/me`);
-      // Backend returns { user: { ... } }
-      return res.data; 
+      // Calls: BASE_URL/auth/me
+      const response = await api.get('/auth/me');
+      return response.data; // Expected: { user: {...} }
     } catch (err) {
       return rejectWithValue(null);
     }
   }
 );
 
-// 2. LOGIN USER
+// B. LOGIN USER
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${API_URL}/login`, { email, password });
-      return res.data;
+      // Calls: BASE_URL/auth/login
+      const response = await api.post('/auth/login', { email, password });
+      return response.data;
     } catch (err) {
-      // Return the specific error message from backend
+      // Return specific error message from backend
       return rejectWithValue(err.response?.data?.message || 'Login failed');
     }
   }
 );
 
-// 3. REGISTER USER
+// C. REGISTER USER
 export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async ({ email, password, username }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${API_URL}/register`, {
+      // Calls: BASE_URL/auth/register
+      const response = await api.post('/auth/register', {
         email,
         password,
         username
       });
-      return res.data;
+      return response.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Registration failed');
     }
   }
 );
 
-// 4. LOGOUT USER
+// D. LOGOUT USER
 export const logoutUser = createAsyncThunk('auth/logoutUser', async () => {
-  await axios.post(`${API_URL}/logout`);
+  // Calls: BASE_URL/auth/logout
+  await api.post('/auth/logout');
 });
+
 
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
-    loading: true, // Start true to prevent "Login" button flicker on refresh
+    loading: true, 
     error: null,
-    message: null, // Added for Success Alerts
+    message: null, 
   },
   reducers: {
     clearAuth(state) {
@@ -84,8 +89,7 @@ const authSlice = createSlice({
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.loading = false;
-        // The backend returns { user: {...} }, so we extract it
-        state.user = action.payload.user; 
+        state.user = action.payload.user;
       })
       .addCase(checkAuth.rejected, (state) => {
         state.loading = false;
@@ -100,12 +104,12 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload; // Set user data
-        state.message = action.payload.message || "Login Successful"; // Set success message
+        state.user = action.payload.user; // Ensure your backend returns { user: ... }
+        state.message = action.payload.message || "Login Successful";
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload; // Set error message
+        state.error = action.payload;
       })
 
       // --- REGISTER ---
@@ -115,7 +119,7 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.user; 
         state.message = action.payload.message || "Account created successfully";
       })
       .addCase(registerUser.rejected, (state, action) => {
