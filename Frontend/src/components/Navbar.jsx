@@ -12,6 +12,20 @@ const Navbar = ({
   searchQuery,
   setSearchQuery
 }) => {
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+    
+   
+    if (e.target.value.length > 0) {
+     
+      window.scrollTo({
+        top: window.innerHeight * 0.8,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
       scrolled 
@@ -29,19 +43,22 @@ const Navbar = ({
             <div className="relative">
               <Film className="w-7 h-7 md:w-10 md:h-10 text-purple-500 group-hover:scale-110 transition-transform duration-300" strokeWidth={2.5} />
             </div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-              MyFlix
-            </h1>
+            <div className="flex flex-col">
+               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+                MyFlix
+              </h1>
+            </div>
           </div>
 
           {/* Search Bar - Desktop */}
-          <div className="hidden lg:flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 focus-within:border-purple-500/50 transition-all duration-300">
+
+          <div className="hidden lg:flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 focus-within:border-purple-500/50 transition-all duration-300 focus-within:w-72 focus-within:bg-white/10">
             <Search className="w-4 h-4 text-purple-400" />
             <input 
               type="text"
               placeholder="Search movies..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchQuery} 
+              onChange={handleSearch} 
               className="bg-transparent border-none outline-none text-sm ml-2 w-64 placeholder:text-slate-500 text-white"
             />
           </div>
@@ -51,7 +68,7 @@ const Navbar = ({
         {user || token ? (
           <div className="flex items-center gap-3 md:gap-4">
             <span className="hidden sm:block text-white text-xs md:text-sm font-medium bg-white/10 px-3 md:px-4 py-2 rounded-lg border border-white/20">
-              Hi, <span className="text-purple-300 font-semibold">{user?.username}</span>
+              Hi, <span className="text-purple-300 font-semibold">{user?.username || 'User'}</span>
             </span>
             <div className="relative">
               <button 
@@ -61,7 +78,7 @@ const Navbar = ({
                 <span className="text-white font-bold text-sm md:text-base">{userInitial}</span>
               </button>
               {showUserMenu && (
-                <div className="absolute right-0 mt-3 w-48 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+                <div className="absolute right-0 mt-3 w-48 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2">
                   <button 
                     onClick={handleLogout}
                     className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2 font-semibold transition-colors duration-200"
@@ -91,14 +108,15 @@ const Navbar = ({
       </div>
 
       {/* Mobile Search Bar */}
+ 
       <div className="lg:hidden px-4 sm:px-6 pb-4">
-        <div className="flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 focus-within:border-purple-500/50 transition-all duration-300">
+        <div className="flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 focus-within:border-purple-500/50 transition-all duration-300 focus-within:bg-white/10">
           <Search className="w-4 h-4 text-purple-400" />
           <input 
             type="text"
             placeholder="Search movies..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearch}
             className="bg-transparent border-none outline-none text-sm ml-2 w-full placeholder:text-slate-500 text-white"
           />
         </div>
