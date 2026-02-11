@@ -1,12 +1,15 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import * as api from '../services/api';
+// Change this line to import the default 'api' instance
+import api from '../services/api'; 
 
 export const fetchVideos = createAsyncThunk('content/fetchVideos', async (_, { rejectWithValue }) => {
   try {
-    const response = await api.getVideos();
+    // Now call it directly from the api instance
+    const response = await api.get('/videos'); 
     return response.data;
   } catch (error) {
-    return rejectWithValue(error.message);
+    // Return the server's error message if available
+    return rejectWithValue(error.response?.data?.message || error.message);
   }
 });
 
@@ -22,6 +25,7 @@ const contentSlice = createSlice({
     builder
       .addCase(fetchVideos.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchVideos.fulfilled, (state, action) => {
         state.loading = false;
