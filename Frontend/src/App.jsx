@@ -5,8 +5,8 @@ import { checkAuth } from './store/authSlice';
 
 import Home from './pages/Home/Home';
 import Watch from './pages/Watch'; 
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
+import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
 import ErrorPage from "./pages/ErrorPage";
 
 function App() {
