@@ -14,6 +14,7 @@ const { errorHandler } = require('./src/middleware/error.middleware');
 
 const app = express();
 
+// 🚀 ESSENTIAL FOR RENDER
 app.set('trust proxy', 1);
 
 app.use(cors({
@@ -33,10 +34,11 @@ app.use(session({
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
+  proxy: true, // 🚀 Required for Render
   cookie: {
-    secure: false,
+    secure: true,      // 🚀 Must be true for HTTPS/Production
+    sameSite: 'none',  // 🚀 Must be 'none' for cross-domain login
     httpOnly: true,
-    sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24
   }
 }));
