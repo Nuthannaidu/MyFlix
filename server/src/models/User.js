@@ -32,10 +32,6 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: true,
     unique: true
-  },
-  provider: {
-    type: DataTypes.STRING,
-    defaultValue: 'local'
   }
 }, {
   hooks: {
