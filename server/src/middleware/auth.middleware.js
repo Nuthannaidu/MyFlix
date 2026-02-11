@@ -1,19 +1,19 @@
 const protect = (req, res, next) => {
   try {
-    if (!req.session) {
-      return res.status(401).json({
-        success: false,
-        message: 'No session found. Please login.',
-      });
+    // Passport automatically adds isAuthenticated() to the request object
+    if (req.isAuthenticated()) {
+      return next();
     }
-    if (!req.session.userId) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized. Please login.',
-      });
+
+    // Fallback check for manual session assignment
+    if (req.session && req.session.userId) {
+      return next();
     }
-    req.userId = req.session.userId;
-    next();
+
+    return res.status(401).json({
+      success: false,
+      message: 'Not authorized. Please login.',
+    });
   } catch (error) {
     console.error('Auth middleware error:', error);
     res.status(500).json({
