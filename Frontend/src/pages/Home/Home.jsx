@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchVideos } from '../../store/contentSlice';
-import { logout, logoutUser, checkAuth } from '../../store/authSlice';
+// 🟢 FIXED: Removed 'logout' import which was causing the build to fail
+import { logoutUser, checkAuth } from '../../store/authSlice';
 import { useNavigate } from 'react-router-dom';
 import Navbar from "../../components/Navbar";
 import HeroSection from "../../components/HeroSection";
@@ -22,18 +23,21 @@ const Home = () => {
 
   const isAuthenticated = !!user;
 
+  // Initial Auth Check
   useEffect(() => {
     if (!user) {
       dispatch(checkAuth());
     }
   }, [dispatch, user]);
 
+  // Fetch Content
   useEffect(() => {
     if (videos.length === 0) {
       dispatch(fetchVideos());
     }
   }, [dispatch, videos.length]);
 
+  // Scroll Listener for Navbar transparency
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -42,25 +46,24 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 🔥 ONLY FIXED PART
-const filteredVideos = useMemo(() => {
-  return videos.filter((video) => {
-    const searchLower = searchQuery.toLowerCase();
+  // Filter Logic for Search and Genre
+  const filteredVideos = useMemo(() => {
+    return videos.filter((video) => {
+      const searchLower = searchQuery.toLowerCase();
 
-    const matchesSearch =
-      video.title.toLowerCase().includes(searchLower) ||
-      video.Tags?.some(tag =>
-        tag.name.toLowerCase().includes(searchLower)
-      );
+      const matchesSearch =
+        video.title.toLowerCase().includes(searchLower) ||
+        video.Tags?.some(tag =>
+          tag.name.toLowerCase().includes(searchLower)
+        );
 
-    const matchesGenre =
-      selectedGenre === "All" ||
-      video.Tags?.some(tag => tag.name === selectedGenre);
+      const matchesGenre =
+        selectedGenre === "All" ||
+        video.Tags?.some(tag => tag.name === selectedGenre);
 
-    return matchesSearch && matchesGenre;
-  });
-}, [videos, searchQuery, selectedGenre]);
-
+      return matchesSearch && matchesGenre;
+    });
+  }, [videos, searchQuery, selectedGenre]);
 
   const handlePlayClick = (videoId) => {
     if (isAuthenticated) {
@@ -70,17 +73,20 @@ const filteredVideos = useMemo(() => {
     }
   };
 
+  // 🟢 FIXED: Updated handleLogout to use only logoutUser
   const handleLogout = async () => {
     try {
+      // logoutUser thunk handles both API call and state clearing
       await dispatch(logoutUser()).unwrap();
-      dispatch(logout());
       navigate('/login');
     } catch (error) {
       console.error("Logout failed:", error);
-      dispatch(logout());
+      // Even if API fails, we want the user to go back to login
       navigate('/login');
     }
   };
+
+  // --- RENDERING LOGIC ---
 
   if (loading) {
     return (
@@ -134,6 +140,7 @@ const filteredVideos = useMemo(() => {
 
       <div className="relative px-4 sm:px-6 md:px-10 pb-16 pt-8 z-20">
         
+        {/* Genre Selector */}
         <div className="flex items-center gap-3 mb-10 overflow-x-auto pb-2 scrollbar-hide">
           {genres.map((genre) => (
             <button
@@ -150,6 +157,7 @@ const filteredVideos = useMemo(() => {
           ))}
         </div>
 
+        {/* Section Heading */}
         <div className="flex items-center gap-4 mb-8">
           <div className="p-2.5 bg-purple-500/20 rounded-xl border border-purple-500/30">
             <TrendingUp className="w-6 h-6 text-purple-400" />
@@ -159,6 +167,7 @@ const filteredVideos = useMemo(() => {
           </h2>
         </div>
         
+        {/* Result Grid */}
         {filteredVideos.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-slate-400 text-lg">No videos found matching your search.</p>
