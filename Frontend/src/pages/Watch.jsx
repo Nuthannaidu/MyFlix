@@ -7,7 +7,7 @@ import { Settings, Check, ArrowLeft, Film, Maximize, Minimize } from 'lucide-rea
 
 import HLSService from '../../services/hls.service';
 import { fetchVideoById, resetPlayer } from './../store/playerSlice';
-import { checkAuth, logoutUser } from './../store/authSlice';
+import { logoutUser } from './../store/authSlice';
 import Navbar from './../components/Navbar';
 
 const Watch = () => {
@@ -47,51 +47,28 @@ const Watch = () => {
     return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await dispatch(logoutUser()).unwrap();
-      navigate('/login');
-    } catch (err) {
-      console.error("Logout failed:", err);
-      navigate('/login');
-    }
-  };
+const handleLogout = async () => {
+  await dispatch(logoutUser());
+  navigate('/login');
+};
 
-  // Auth synchronization and data fetching
-  useEffect(() => {
-    const initializeWatch = async () => {
-      // If we don't have a user in Redux, verify session with backend first
-      if (!user) {
-        try {
-          await dispatch(checkAuth()).unwrap();
-        } catch (err) {
-          // If checkAuth fails, no valid session exists
-          navigate('/login');
-          return;
-        }
-      }
-      
-      // Once auth is confirmed, fetch the video details
-      if (id) {
-        dispatch(fetchVideoById(id));
-      }
-    };
+// 🟢 Update this useEffect in Watch.jsx
+useEffect(() => {
+  // Only fetch if we have an ID AND we have confirmed the user is logged in
+  if (id && user) {
+    dispatch(fetchVideoById(id));
+  } else if (id && !user) {
+    // If there is no user, try to check auth first
+    dispatch(checkAuth());
+  }
+  
+  return () => dispatch(resetPlayer());
+}, [id, dispatch, user]); // Added 'user' to dependency array
 
-    initializeWatch();
-
-    return () => {
-      dispatch(resetPlayer());
-    };
-  }, [id, dispatch, user, navigate]);
-
-  // HLS logic
   useEffect(() => {
     const videoElement = videoRef.current;
     if (videoElement && currentVideo?.videoUrl) {
-      const hls = HLSService.loadVideo(videoElement, currentVideo.videoUrl, (err) => {
-        console.error("HLS Loading Error:", err);
-      });
-
+      const hls = HLSService.loadVideo(videoElement, currentVideo.videoUrl, console.error);
       if (hls) {
         setHlsInstance(hls);
         hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
@@ -114,6 +91,7 @@ const Watch = () => {
     setShowQualityMenu(false);
   };
 
+  // 4. Custom Fullscreen Toggle Function
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
       playerContainerRef.current.requestFullscreen().catch(err => {
@@ -126,32 +104,13 @@ const Watch = () => {
 
   const userInitial = user?.username?.charAt(0).toUpperCase() || "U";
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center space-y-4">
-        <Film className="w-12 h-12 text-purple-500 animate-pulse" />
-        <p className="text-purple-200/50 text-sm animate-pulse">Loading Video...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center space-y-4">
-        <p className="text-red-400 font-medium">Unable to load video</p>
-        <button 
-          onClick={() => navigate('/')} 
-          className="text-slate-400 hover:text-white underline text-sm"
-        >
-          Return to Home
-        </button>
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center space-y-4"><Film className="w-12 h-12 text-purple-500 animate-pulse" /><p className="text-purple-200/50 text-sm animate-pulse">Loading Video...</p></div>;
+  if (error) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><p className="text-red-400">Unable to load video</p></div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white relative">
       
+      {/* Hide Navbar when in Fullscreen Mode */}
       {!isFullScreen && (
         <Navbar 
           scrolled={scrolled} user={user} token={token} 
@@ -161,6 +120,7 @@ const Watch = () => {
         />
       )}
 
+      {/* Background Effect */}
       {currentVideo?.thumbnailUrl && !isFullScreen && (
         <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
           <div className="absolute inset-0 opacity-30 blur-3xl scale-125" style={{ backgroundImage: `url(${currentVideo.thumbnailUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
@@ -172,9 +132,7 @@ const Watch = () => {
         
         {!isFullScreen && (
           <button onClick={() => navigate('/')} className="mb-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors group">
-            <div className="p-2 rounded-full bg-white/5 group-hover:bg-purple-600 transition-colors">
-              <ArrowLeft className="w-5 h-5" />
-            </div>
+            <div className="p-2 rounded-full bg-white/5 group-hover:bg-purple-600 transition-colors"><ArrowLeft className="w-5 h-5" /></div>
             <span className="text-sm font-medium">Back to Browse</span>
           </button>
         )}
@@ -182,6 +140,7 @@ const Watch = () => {
         <div className={isFullScreen ? "w-full h-full" : "grid grid-cols-1 lg:grid-cols-3 gap-8"}>
           <div className={isFullScreen ? "w-full h-full" : "lg:col-span-3"}>
             
+            {/* 5. PLAYER CONTAINER (Ref attached here) */}
             <div 
               ref={playerContainerRef}
               className={`relative group bg-black overflow-hidden shadow-2xl ${isFullScreen ? 'w-full h-full flex items-center justify-center' : 'rounded-2xl border border-white/10'}`}
@@ -195,8 +154,10 @@ const Watch = () => {
                 playsInline
               />
 
+              {/* 6. Custom Controls Overlay (Top Right) */}
               <div className="absolute top-4 right-4 z-50 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 
+                {/* Quality Button */}
                 <div className="relative">
                   <button
                     onClick={() => setShowQualityMenu(!showQualityMenu)}
@@ -208,6 +169,7 @@ const Watch = () => {
                     </span>
                   </button>
 
+                  {/* Quality Menu Dropdown */}
                   {showQualityMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 origin-top-right z-50">
                       <div className="py-2">
@@ -227,6 +189,7 @@ const Watch = () => {
                   )}
                 </div>
 
+                {/* 7. New Fullscreen Toggle Button */}
                 <button
                   onClick={toggleFullScreen}
                   className="flex items-center justify-center w-10 h-10 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-white hover:bg-white/20 transition-all shadow-lg"
@@ -237,6 +200,7 @@ const Watch = () => {
 
               </div>
               
+              {/* Optional: Add CSS to hide the NATIVE fullscreen button to avoid confusion */}
               <style>{`
                 video::-webkit-media-controls-fullscreen-button {
                   display: none !important;
@@ -245,6 +209,7 @@ const Watch = () => {
 
             </div>
 
+            {/* Video Meta Data (Hide in Fullscreen) */}
             {!isFullScreen && (
               <div className="mt-6 space-y-4">
                 <h1 className="text-2xl md:text-4xl font-bold text-white tracking-tight">{currentVideo?.title}</h1>
