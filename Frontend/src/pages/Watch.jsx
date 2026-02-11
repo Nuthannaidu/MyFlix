@@ -7,7 +7,7 @@ import { Settings, Check, ArrowLeft, Film, Maximize, Minimize } from 'lucide-rea
 
 import HLSService from '../../services/hls.service';
 import { fetchVideoById, resetPlayer } from './../store/playerSlice';
-import { logoutUser, logout } from './../store/authSlice';
+import { logoutUser } from './../store/authSlice';
 import Navbar from './../components/Navbar';
 
 const Watch = () => {
@@ -47,11 +47,10 @@ const Watch = () => {
     return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
   }, []);
 
-  const handleLogout = async () => {
-    await dispatch(logoutUser());
-    dispatch(logout());
-    navigate('/login');
-  };
+const handleLogout = async () => {
+  await dispatch(logoutUser());
+  navigate('/login');
+};
 
   useEffect(() => {
     if (id) dispatch(fetchVideoById(id));
