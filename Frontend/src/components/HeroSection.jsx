@@ -40,13 +40,6 @@ const HeroSection = ({
             <Play className="w-5 h-5 md:w-6 md:h-6 fill-current" />
             <span>{isAuthenticated ? "Play Now" : "Sign In to Watch"}</span>
           </button>
-          
-          <button 
-            onClick={() => featuredVideo && handlePlayClick(featuredVideo.id)}
-            className="flex items-center gap-2 md:gap-3 px-6 md:px-10 py-3 md:py-4 bg-white/20 backdrop-blur-sm text-white rounded-xl font-bold text-base md:text-lg hover:bg-white/30 transition-all duration-300 border border-white/30"
-          >
-            More Info
-          </button>
         </div>
       </div>
     </div>
