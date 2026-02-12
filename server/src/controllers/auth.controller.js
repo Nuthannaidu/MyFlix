@@ -1,15 +1,24 @@
 const { User } = require('../models');
 const bcrypt = require('bcrypt');
+const { registerSchema, loginSchema } = require('../auth.validator');
 
 exports.register = async (req, res) => {
   try {
- 
+      const { error } = registerSchema.validate(req.body);
+if (error) {
+  return res.status(400).json({
+    message: error.details[0].message
+  });
+}
     const { username, email, password } = req.body;
 
+    
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
+ 
+
 
     const user = await User.create({ 
       username, 
@@ -33,6 +42,13 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
+        const { error } = loginSchema.validate(req.body);
+if (error) {
+  return res.status(400).json({
+    message: error.details[0].message
+  });
+}
+
     const { email, password } = req.body;
 
     const user = await User.findOne({ where: { email } });
@@ -50,6 +66,7 @@ exports.login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid password' });
     }
+
 
     req.session.userId = user.id;
 

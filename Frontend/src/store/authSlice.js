@@ -6,14 +6,13 @@ axios.defaults.withCredentials = true;
 
 const API_URL = 'http://localhost:5000/api/auth';
 
-// 1. CHECK AUTH (Replaces fetchMe)
+
 // This is called when the app loads to see if the user is already logged in (via Cookie)
 export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
     try {
       const res = await axios.get(`${API_URL}/me`);
-      // Backend returns { user: { ... } }
       return res.data; 
     } catch (err) {
       return rejectWithValue(null);
@@ -29,7 +28,7 @@ export const loginUser = createAsyncThunk(
       const res = await axios.post(`${API_URL}/login`, { email, password });
       return res.data;
     } catch (err) {
-      // Return the specific error message from backend
+     
       return rejectWithValue(err.response?.data?.message || 'Login failed');
     }
   }
@@ -61,9 +60,9 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
-    loading: true, // Start true to prevent "Login" button flicker on refresh
+    loading: true,
     error: null,
-    message: null, // Added for Success Alerts
+    message: null, 
   },
   reducers: {
     clearAuth(state) {
@@ -84,7 +83,7 @@ const authSlice = createSlice({
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.loading = false;
-        // The backend returns { user: {...} }, so we extract it
+     
         state.user = action.payload.user; 
       })
       .addCase(checkAuth.rejected, (state) => {
@@ -100,12 +99,12 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload; // Set user data
-        state.message = action.payload.message || "Login Successful"; // Set success message
+        state.user = action.payload; 
+        state.message = action.payload.message || "Login Successful"; 
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload; // Set error message
+        state.error = action.payload; 
       })
 
       // --- REGISTER ---

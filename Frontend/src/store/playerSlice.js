@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../services/api'; // Import your axios instance
+import api from '../services/api'; 
 
-// NEW: Async thunk to fetch video details from backend
+// Async thunk to fetch video details from backend
 export const fetchVideoById = createAsyncThunk(
   'player/fetchVideoById',
   async (id, { rejectWithValue }) => {
@@ -17,7 +17,7 @@ export const fetchVideoById = createAsyncThunk(
 const playerSlice = createSlice({
   name: 'player',
   initialState: {
-    currentVideo: null, // Stores full video object (title, desc, url)
+    currentVideo: null,
     loading: false,
     error: null,
   },

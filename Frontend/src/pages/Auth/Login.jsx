@@ -13,8 +13,6 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Assuming 'message' comes from backend for success (e.g., "Welcome back!"). 
-  // If not, we fallback to a default success message when 'user' exists.
   const { user, loading, error, message } = useSelector((state) => state.auth);
 
   // Clear previous states on mount
@@ -27,7 +25,7 @@ const Login = () => {
     if (user) {
       const timer = setTimeout(() => {
         navigate('/');
-      }, 1500); // 1.5 second delay for UX
+      }, 1500); 
       return () => clearTimeout(timer);
     }
   }, [user, navigate]);

@@ -42,7 +42,7 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 🔥 ONLY FIXED PART
+ 
 const filteredVideos = useMemo(() => {
   return videos.filter((video) => {
     const searchLower = searchQuery.toLowerCase();
